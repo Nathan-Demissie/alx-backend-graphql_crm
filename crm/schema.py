@@ -46,7 +46,8 @@ class CreateCustomer(graphene.Mutation):
             raise ValidationError("Email already exists")
         if input.phone and not re.match(r'^(\+\d{10,15}|\d{3}-\d{3}-\d{4})$', input.phone):
             raise ValidationError("Invalid phone format")
-        customer = Customer.objects.create(**input)
+        customer = Customer(name=input.name, email=input.email, phone=input.phone)
+        customer.save()
         return CreateCustomer(customer=customer, message="Customer created successfully")
 
 class BulkCreateCustomers(graphene.Mutation):
@@ -66,7 +67,8 @@ class BulkCreateCustomers(graphene.Mutation):
                         raise ValidationError(f"Email {entry.email} already exists")
                     if entry.phone and not re.match(r'^(\+\d{10,15}|\d{3}-\d{3}-\d{4})$', entry.phone):
                         raise ValidationError(f"Invalid phone format for {entry.name}")
-                    customer = Customer.objects.create(**entry)
+                    customer = Customer(name=entry.name, email=entry.email, phone=entry.phone)
+                    customer.save()
                     created.append(customer)
                 except Exception as e:
                     errors.append(str(e))
@@ -83,7 +85,8 @@ class CreateProduct(graphene.Mutation):
             raise ValidationError("Price must be positive")
         if input.stock is not None and input.stock < 0:
             raise ValidationError("Stock cannot be negative")
-        product = Product.objects.create(**input)
+        product = Product(name=input.name, price=input.price, stock=input.stock or 0)
+        product.save()
         return CreateProduct(product=product)
 
 class CreateOrder(graphene.Mutation):
@@ -107,11 +110,8 @@ class CreateOrder(graphene.Mutation):
             raise ValidationError("At least one product must be selected")
 
         total = sum(p.price for p in products)
-        order = Order.objects.create(
-            customer=customer,
-            total_amount=total,
-            order_date=order_date or datetime.now()
-        )
+        order = Order(customer=customer, total_amount=total, order_date=order_date or datetime.now())
+        order.save()
         order.products.set(products)
         return CreateOrder(order=order)
 
