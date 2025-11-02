@@ -3,6 +3,18 @@ from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
 import datetime
 
+from datetime import datetime
+import requests
+
+timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+response = requests.post(
+    "http://localhost:8000/graphql",
+    json={"query": "{ customers { id } orders { id totalamount } }"},
+    headers={"Content-Type": "application/json"}
+)
+
+
 @shared_task
 def generate_crm_report():
     transport = RequestsHTTPTransport(
