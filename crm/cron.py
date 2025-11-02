@@ -1,6 +1,16 @@
 import datetime
 import requests
 
+from gql import gql, Client
+from gql.transport.requests import RequestsHTTPTransport
+
+transport = RequestsHTTPTransport(url="http://localhost:8000/graphql", verify=True, retries=3)
+client = Client(transport=transport, fetch_schema_from_transport=True)
+
+query = gql("{ hello }")
+response = client.execute(query)
+
+
 def log_crm_heartbeat():
     # Log timestamped heartbeat message
     timestamp = datetime.datetime.now().strftime('%d/%m/%Y-%H:%M:%S')
