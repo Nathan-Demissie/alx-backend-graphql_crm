@@ -20,3 +20,7 @@ def log_crm_heartbeat():
             print("GraphQL heartbeat check failed.")
     except Exception as e:
         print(f"GraphQL heartbeat error: {e}")
+
+CRONJOBS = [
+    ('*/5 * * * *', 'crm.cron.log_crm_heartbeat'),
+]
