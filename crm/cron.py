@@ -4,6 +4,41 @@ import requests
 from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
 
+from gql import gql, Client
+from gql.transport.requests import RequestsHTTPTransport
+import datetime
+
+def update_low_stock():
+    transport = RequestsHTTPTransport(
+        url="http://localhost:8000/graphql",
+        verify=True,
+        retries=3,
+    )
+    client = Client(transport=transport, fetch_schema_from_transport=True)
+
+    mutation = gql("""
+    mutation {
+      updateLowStockProducts {
+        updatedProducts
+        message
+      }
+    }
+    """)
+
+    try:
+        result = client.execute(mutation)
+        updated = result["updateLowStockProducts"]["updatedProducts"]
+        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        with open("/tmp/low_stock_updates_log.txt", "a") as log_file:
+            for item in updated:
+                log_file.write(f"{timestamp} - {item}\n")
+
+        print("Stock update completed.")
+    except Exception as e:
+        print(f"Error updating stock: {e}")
+
+
 transport = RequestsHTTPTransport(url="http://localhost:8000/graphql", verify=True, retries=3)
 client = Client(transport=transport, fetch_schema_from_transport=True)
 
